@@ -1,23 +1,22 @@
-FROM golang:1.22.5 as base
+FROM golang:1.22.5 AS base
 
 WORKDIR /app
 
-copy go.mod .
+COPY go.mod .
 
-Run go mod download
+RUN go mod download
 
-copy . .
+COPY . .
 
-Run go build -o main .
+RUN go build -o main .
 
- # final stage - distroless image
+# Final stage - distroless image
+FROM gcr.io/distroless/base
 
- from gcr.io/distroless/base
+COPY --from=base /app/main .
 
- COPY --from=base /app/main .
+COPY --from=base /app/static ./static
 
- COPY --from=base /app/static ./static 
+EXPOSE 8081
 
- EXPOSE 8081
-
- CMD [ "./main"   ]  
+CMD ["./main"]
